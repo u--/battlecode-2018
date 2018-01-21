@@ -2250,12 +2250,6 @@ impl GameWorld {
 
     /// Determines if the game has ended, returning the winning team if so.
     pub(crate) fn is_game_over(&self) -> Option<Team> {
-        // There is an exception in the usual logic to handle both teams
-        // being simultaneously wiped out by the flood. This is handled
-        // in end_round().
-        if self.pre_flood_winner.is_some() {
-            return self.pre_flood_winner;
-        }
 
         // Calculate the value of all units.
         let mut red_units_value = 0;
@@ -2283,6 +2277,15 @@ impl GameWorld {
         // not at the round limit.
         if self.round() <= ROUND_LIMIT && red_units_value > 0 && blue_units_value > 0 {
             return None;
+        }
+
+
+        // There is an exception in the usual logic to handle both teams
+        // being simultaneously wiped out by the flood. This is handled
+        // in end_round().
+        if self.pre_flood_winner.is_some() && self.round() == APOCALYPSE_ROUND + 1
+            && red_units_value == 0 && blue_units_value == 0 {
+            return self.pre_flood_winner;
         }
 
         // Tiebreakers proceed in the following order:
